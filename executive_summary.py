@@ -117,7 +117,7 @@ st.set_page_config(
     layout="wide"
 )
 left, center, right = st.columns([1, 3.5, 1])
-center.header(":material/dashboard: Executive summary")
+center.header(":material/health_metrics: Executive summary")
 left_center, center_center, right_center = center.columns(3)
 
 df = fetch_data()

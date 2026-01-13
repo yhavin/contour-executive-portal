@@ -50,7 +50,7 @@ executive_summary_page = st.Page(
     page="executive_summary.py",
     title="Executive summary",
     url_path="executive-summary",
-    icon=":material/dashboard:"
+    icon=":material/health_metrics:"
 )
 
 if "logged_in" in st.session_state and st.session_state["logged_in"]:
