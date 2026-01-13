@@ -46,19 +46,19 @@ login_page = st.Page(
     title="Home",
     icon=":material/home:"
 )
-page2_page = st.Page(
-    page="page2.py",
-    title="Page 2",
-    url_path="page-2",
-    icon=":material/content_copy:"
+executive_summary_page = st.Page(
+    page="executive_summary.py",
+    title="Executive Summary",
+    url_path="executive-summary",
+    icon=":material/dashboard:"
 )
 
 if "logged_in" in st.session_state and st.session_state["logged_in"]:
-    navigation = {
-        "": [login_page],
-        "Reports": [page2_page]
-    }
-
+    navigation = [
+        login_page, 
+        executive_summary_page
+    ]
+    
     pg = st.navigation(navigation, expanded=True)
 else:
     pg = st.navigation([login_page])
