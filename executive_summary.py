@@ -4,6 +4,7 @@ import streamlit as st
 import polars as pl
 from millify import millify
 
+import utils
 from enums import FinancialCategory
 
 
@@ -18,20 +19,6 @@ def fetch_data():
     ).sort("period")
 
 
-def calculate_category_total(df: pl.DataFrame, category: str, value_column: str="activity"):
-    """SUMIF on a DataFrame (category is case-insensitive)."""
-    return df.filter(pl.col("category").str.to_lowercase() == category.lower()).select(pl.col(value_column).sum()).item()
-
-
-def format_metric(value) -> str:
-    if abs(value) >= 1000000:
-        return millify(value, precision=2, drop_nulls=False)
-    elif abs(value) >= 1000:
-        return millify(value, precision=0)
-    else:
-        return str(value)
-
-
 def metrics_section(df: pl.DataFrame, period_selection: datetime):
     selected_df = df.filter(pl.col("period") == period_selection)
 
@@ -39,14 +26,14 @@ def metrics_section(df: pl.DataFrame, period_selection: datetime):
     prior_df = df.filter(pl.col("period") == prior_period)
 
     # Sum each category for selected period
-    selected_total_revenue = calculate_category_total(selected_df, FinancialCategory.REVENUE.value)
-    selected_total_cost_of_goods_sold = calculate_category_total(selected_df, FinancialCategory.COST_OF_GOODS_SOLD.value)
-    selected_total_operating_expenses = calculate_category_total(selected_df, FinancialCategory.OPERATING_EXPENSES.value)
+    selected_total_revenue = utils.calculate_category_total(selected_df, FinancialCategory.REVENUE.value)
+    selected_total_cost_of_goods_sold = utils.calculate_category_total(selected_df, FinancialCategory.COST_OF_GOODS_SOLD.value)
+    selected_total_operating_expenses = utils.calculate_category_total(selected_df, FinancialCategory.OPERATING_EXPENSES.value)
 
     # Sum each category for prior period
-    prior_total_revenue = calculate_category_total(prior_df, FinancialCategory.REVENUE.value)
-    prior_total_cost_of_goods_sold = calculate_category_total(prior_df, FinancialCategory.COST_OF_GOODS_SOLD.value)
-    prior_total_operating_expenses = calculate_category_total(prior_df, FinancialCategory.OPERATING_EXPENSES.value)
+    prior_total_revenue = utils.calculate_category_total(prior_df, FinancialCategory.REVENUE.value)
+    prior_total_cost_of_goods_sold = utils.calculate_category_total(prior_df, FinancialCategory.COST_OF_GOODS_SOLD.value)
+    prior_total_operating_expenses = utils.calculate_category_total(prior_df, FinancialCategory.OPERATING_EXPENSES.value)
 
     # Create subtotals for selected period
     selected_total_gross_profit = selected_total_revenue - selected_total_cost_of_goods_sold
@@ -66,19 +53,19 @@ def metrics_section(df: pl.DataFrame, period_selection: datetime):
     metric1, metric2, metric3 = metrics_container.columns(3)
     metric1.metric(
         label="Revenue", 
-        value=f"${format_metric(selected_total_revenue)}", 
+        value=f"${utils.format_metric(selected_total_revenue)}", 
         delta=millify(total_revenue_delta), 
         border=True
     )
     metric2.metric(
         label="Gross profit", 
-        value=f"${format_metric(selected_total_gross_profit)}", 
+        value=f"${utils.format_metric(selected_total_gross_profit)}", 
         delta=millify(total_gross_profit_delta), 
         border=True
     
     )
     metric3.metric(label="Net profit",
-        value=f"${format_metric(selected_total_net_profit)}",
+        value=f"${utils.format_metric(selected_total_net_profit)}",
         delta=millify(total_net_profit_delta),
         border=True
     )

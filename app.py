@@ -1,3 +1,9 @@
+"""
+App entrypoint.
+
+Author: Yakir Havin
+"""
+
 import streamlit as st
 
 
@@ -52,11 +58,18 @@ executive_summary_page = st.Page(
     url_path="executive-summary",
     icon=":material/health_metrics:"
 )
+performance_explorer_page = st.Page(
+    page="performance_explorer.py",
+    title="Performance explorer",
+    url_path="performance-explorer",
+    icon=":material/explore:"
+)
 
 if "logged_in" in st.session_state and st.session_state["logged_in"]:
     navigation = [
         login_page, 
-        executive_summary_page
+        executive_summary_page,
+        performance_explorer_page
     ]
     
     pg = st.navigation(navigation, expanded=True)

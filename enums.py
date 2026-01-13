@@ -1,3 +1,10 @@
+"""
+Enums.
+
+Author: Yakir Havin
+"""
+
+
 from enum import Enum
 
 
