@@ -9,11 +9,6 @@ from constants import Metric, METRIC_CONSTANTS
 
 
 # =======================
-# Constants
-# =======================
-
-
-# =======================
 # Functions
 # =======================
 # @st.cache_data(show_spinner=False)
@@ -80,5 +75,6 @@ metric_selection = left_center.selectbox(
     options=list(Metric),
     format_func=lambda x: x.value
 )
+left_center.caption(body=METRIC_CONSTANTS[metric_selection]["caption"])
 
 performance_explorer_section(df, metric_selection, from_period_selection, to_period_selection)

@@ -28,36 +28,42 @@ METRIC_CONSTANTS = {
         "format": {
             "axis": "$,.0f",
             "tooltip": "$,.2f"
-        } 
+        },
+        "caption": "Total revenue earned"
     },
     Metric.GROSS_PROFIT: {
         "format": {
             "axis": "$,.0f",
             "tooltip": "$,.2f"
-        }
+        },
+        "caption": "Revenue minus cost of goods sold"
     },
     Metric.OPERATING_EXPENSES: {
         "format": {
             "axis": "$,.0f",
             "tooltip": "$,.2f"
-        }
+        },
+        "caption": "Total operating expenses"
     },
     Metric.NET_PROFIT: {
         "format": {
             "axis": "$,.0f",
             "tooltip": "$,.2f"
-        }
+        },
+        "caption": "Gross profit minus operating expenses"
     },
     Metric.GROSS_PROFIT_RATIO: {
         "format": {
             "axis": ".0%",
             "tooltip": ".2%"
-        }
+        },
+        "caption": "Gross profit divided by revenue"
     },
     Metric.OPERATING_EXPENSE_RATIO: {
         "format": {
             "axis": ".0%",
             "tooltip": ".2%"
-        }
+        },
+        "caption": "Operating expenses divided by revenue"
     }
 }
