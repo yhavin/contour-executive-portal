@@ -1,5 +1,4 @@
-from datetime import datetime, timedelta
-from typing import Literal
+from datetime import datetime
 
 import streamlit as st
 import polars as pl
@@ -17,43 +16,37 @@ CHART_SETTINGS = {
         "format": {
             "axis": "$,.0f",
             "tooltip": "$,.2f"
-        },
-        "scale": alt.Scale()   
+        } 
     },
     Metric.GROSS_PROFIT: {
         "format": {
             "axis": "$,.0f",
             "tooltip": "$,.2f"
-        },
-        # "scale": alt.Scale() 
+        }
     },
     Metric.OPERATING_EXPENSES: {
         "format": {
             "axis": "$,.0f",
             "tooltip": "$,.2f"
-        },
-        # "scale": alt.Scale() 
+        }
     },
     Metric.NET_PROFIT: {
         "format": {
             "axis": "$,.0f",
             "tooltip": "$,.2f"
-        },
-        # "scale": alt.Scale()
+        }
     },
     Metric.GROSS_PROFIT_RATIO: {
         "format": {
             "axis": ".0%",
             "tooltip": ".2%"
-        },
-        # "scale": alt.Scale(domain=[0, 1])
+        }
     },
     Metric.OPERATING_EXPENSE_RATIO: {
         "format": {
             "axis": ".0%",
             "tooltip": ".2%"
-        },
-        # "scale": alt.Scale(domain=[0, 1])
+        }
     }
 }
 
@@ -68,8 +61,9 @@ def fetch_data():
     ).sort("period")
 
 
-def performance_explorer_section(df: pl.DataFrame, metric_selection: Metric):
+def performance_explorer_section(df: pl.DataFrame, metric_selection: Metric, from_period_selection: datetime, to_period_selection: datetime):
     df = df.filter(pl.col("metric").str.to_lowercase() == metric_selection.value.lower())
+    df = df.filter(pl.col("period").is_between(from_period_selection, to_period_selection))
     
     chart = alt.Chart(df).mark_line(point=True).encode(
         x=alt.X(
@@ -85,8 +79,7 @@ def performance_explorer_section(df: pl.DataFrame, metric_selection: Metric):
         y=alt.Y(
             "value:Q",
             title=None,
-            axis=alt.Axis(format=CHART_SETTINGS[metric_selection]["format"]["axis"]),
-            # scale=CHART_SETTINGS[metric_selection]["scale"]
+            axis=alt.Axis(format=CHART_SETTINGS[metric_selection]["format"]["axis"])
         ),
         tooltip=[
             alt.Tooltip("period:T", title="Period", format="%B %Y"),
@@ -111,13 +104,13 @@ left_center, center_center, right_center = center.columns(3)
 
 df = fetch_data()
 
-# period_options = df["period"].unique().to_list()
-# period_selection = left_center.selectbox(
-#     label="Period",
-#     options=reversed(period_options),
-#     index=0,
-#     format_func=lambda x: datetime.strftime(x, "%B %Y")
-# )
+period_options = df["period"].unique().to_list()
+from_period_selection, to_period_selection = left_center.select_slider(
+    label="Date range",
+    options=(period_options),
+    value=(period_options[0], period_options[-1]),
+    format_func=lambda x: datetime.strftime(x, "%B %Y")
+)
 
 metric_selection = left_center.selectbox(
     label="Metric",
@@ -125,4 +118,4 @@ metric_selection = left_center.selectbox(
     format_func=lambda x: x.value
 )
 
-performance_explorer_section(df, metric_selection)
+performance_explorer_section(df, metric_selection, from_period_selection, to_period_selection)
