@@ -3,9 +3,6 @@ from datetime import datetime, timedelta
 import streamlit as st
 import polars as pl
 
-import utils
-from constants import FinancialCategory
-
 
 # =======================
 # Functions
@@ -13,26 +10,56 @@ from constants import FinancialCategory
 # @st.cache_data(show_spinner=False)
 def fetch_data():
     return pl.read_csv(
-        "data/high_level_financial_summary.csv",
-        schema_overrides={"period": pl.Date}
+        "data/trial_balance.csv",
+        schema_overrides={
+            "period": pl.Date,
+            "gl_account_code": pl.Utf8,
+            "opening_balance": pl.Float64,
+            "debit": pl.Float64,
+            "credit": pl.Float64,
+            "closing_balance": pl.Float64,
+            "activity": pl.Float64
+        }
     ).sort("period")
 
 
 def metrics_section(df: pl.DataFrame, period_selection: datetime):
-    selected_df = df.filter(pl.col("period") == period_selection)
+    selected_df = df.filter(
+        (pl.col("period") == period_selection) &
+        (pl.col("gl_account_code").str.contains("^[4-9]"))
+    )
 
     prior_period = (period_selection.replace(day=1) - timedelta(days=1)).replace(day=1)
-    prior_df = df.filter(pl.col("period") == prior_period)
+    prior_df = df.filter(
+        (pl.col("period") == prior_period) &
+        (pl.col("gl_account_code").str.contains("^[4-9]"))
+    )
 
     # Sum each category for selected period
-    selected_total_revenue = utils.calculate_category_total(selected_df, FinancialCategory.REVENUE.value)
-    selected_total_cost_of_goods_sold = utils.calculate_category_total(selected_df, FinancialCategory.COST_OF_GOODS_SOLD.value)
-    selected_total_operating_expenses = utils.calculate_category_total(selected_df, FinancialCategory.OPERATING_EXPENSES.value)
+    selected_total_revenue = selected_df.filter(
+        pl.col("gl_account_code").str.starts_with("4")
+    ).select(pl.col("activity").sum()).item() * -1
+
+    selected_total_cost_of_goods_sold = selected_df.filter(
+        pl.col("gl_account_code").str.starts_with("5")
+    ).select(pl.col("activity").sum()).item()
+
+    selected_total_operating_expenses = selected_df.filter(
+        pl.col("gl_account_code").str.contains("^[6-9]")
+    ).select(pl.col("activity").sum()).item()
 
     # Sum each category for prior period
-    prior_total_revenue = utils.calculate_category_total(prior_df, FinancialCategory.REVENUE.value)
-    prior_total_cost_of_goods_sold = utils.calculate_category_total(prior_df, FinancialCategory.COST_OF_GOODS_SOLD.value)
-    prior_total_operating_expenses = utils.calculate_category_total(prior_df, FinancialCategory.OPERATING_EXPENSES.value)
+    prior_total_revenue = prior_df.filter(
+        pl.col("gl_account_code").str.starts_with("4")
+    ).select(pl.col("activity").sum()).item() * -1
+
+    prior_total_cost_of_goods_sold = prior_df.filter(
+        pl.col("gl_account_code").str.starts_with("5")
+    ).select(pl.col("activity").sum()).item()
+
+    prior_total_operating_expenses = prior_df.filter(
+        pl.col("gl_account_code").str.contains("^[6-9]")
+    ).select(pl.col("activity").sum()).item()
 
     # Create subtotals for selected period
     selected_total_gross_profit = selected_total_revenue - selected_total_cost_of_goods_sold

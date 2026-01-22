@@ -8,12 +8,6 @@ Author: Yakir Havin
 from enum import Enum
 
 
-class FinancialCategory(Enum):
-    REVENUE = "Revenue"
-    COST_OF_GOODS_SOLD = "Cost of Goods Sold"
-    OPERATING_EXPENSES = "Operating Expenses"
-
-
 class IncomeStatementCategory(Enum):
     TOTAL_REVENUE = "Total Revenue"
     TOTAL_COST_OF_GOODS_SOLD = "Total Cost of Goods Sold"

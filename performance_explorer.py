@@ -13,14 +13,62 @@ from constants import Metric, METRIC_CONSTANTS
 # @st.cache_data(show_spinner=False)
 def fetch_data():
     return pl.read_csv(
-        "data/performance_metrics.csv",
-        schema_overrides={"period": pl.Date}
+        "data/trial_balance.csv",
+        schema_overrides={
+            "period": pl.Date,
+            "gl_account_code": pl.Utf8,
+            "opening_balance": pl.Float64,
+            "debit": pl.Float64,
+            "credit": pl.Float64,
+            "closing_balance": pl.Float64,
+            "activity": pl.Float64
+        }
     ).sort("period")
 
 
 def performance_explorer_section(df: pl.DataFrame, metric_selection: Metric, from_period_selection: datetime, to_period_selection: datetime):
-    df = df.filter(pl.col("metric").str.to_lowercase() == metric_selection.value.lower())
-    df = df.filter(pl.col("period").is_between(from_period_selection, to_period_selection))
+    df = df.filter(
+        (pl.col("period").is_between(from_period_selection, to_period_selection)) &
+        pl.col("gl_account_code").str.contains("^[4-9]")
+    )
+
+    periods = df["period"].unique().to_list()
+
+    metric_data = []
+    for period in periods:
+        period_df = df.filter(pl.col("period") == period)
+
+        revenue = period_df.filter(
+            pl.col("gl_account_code").str.starts_with("4")
+        ).select(pl.col("activity").sum()).item() * -1
+
+        cost_of_goods_sold = period_df.filter(
+            pl.col("gl_account_code").str.starts_with("5")
+        ).select(pl.col("activity").sum()).item()
+
+        operating_expenses = period_df.filter(
+            pl.col("gl_account_code").str.contains("^[6-9]")
+        ).select(pl.col("activity").sum()).item()
+
+        gross_profit = revenue - cost_of_goods_sold
+        net_profit = gross_profit - operating_expenses
+
+        if metric_selection == Metric.REVENUE:
+            value = revenue
+        elif metric_selection == Metric.GROSS_PROFIT:
+            value = gross_profit
+        elif metric_selection == Metric.OPERATING_EXPENSES:
+            value = operating_expenses
+        elif metric_selection == Metric.NET_PROFIT:
+            value = net_profit
+        elif metric_selection == Metric.GROSS_PROFIT_RATIO:
+            value = gross_profit / revenue if revenue > 0 else 0
+        elif metric_selection == Metric.OPERATING_EXPENSE_RATIO:
+            value = operating_expenses / revenue if revenue > 0 else 0
+
+        metric_data.append({"period": period, "value": value})
+
+    df = pl.DataFrame(metric_data)
     
     chart = alt.Chart(df).mark_line(point=True).encode(
         x=alt.X(
