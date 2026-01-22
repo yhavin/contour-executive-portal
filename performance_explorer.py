@@ -114,7 +114,7 @@ period_options = df["period"].unique().to_list()
 from_period_selection, to_period_selection = left_center.select_slider(
     label="Date range",
     options=(period_options),
-    value=(period_options[0], period_options[-1]),
+    value=(period_options[-12], period_options[-1]),
     format_func=lambda x: datetime.strftime(x, "%B %Y")
 )
 
