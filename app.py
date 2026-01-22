@@ -64,12 +64,19 @@ performance_explorer_page = st.Page(
     url_path="performance-explorer",
     icon=":material/explore:"
 )
+financial_statements_page = st.Page(
+    page="financial_statements.py",
+    title="Financial statements",
+    url_path="financial-statements",
+    icon=":material/article:"
+)
 
-if "logged_in" in st.session_state and st.session_state["logged_in"]:
+if st.session_state.get("logged_in", False):
     navigation = [
         login_page, 
         executive_summary_page,
-        performance_explorer_page
+        performance_explorer_page,
+        financial_statements_page
     ]
     
     pg = st.navigation(navigation, expanded=True)
